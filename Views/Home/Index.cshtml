@@ -1,0 +1,1054 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using GestionEvenements.Models
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Accueil - Gestion d'Événements";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var userName = currentUser != null ? $"{currentUser.FirstName}" : "";
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+}
+
+<style>
+    :root {
+        --primary: #1e40af;
+        --accent: #ec4899;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --bg-light: #f8fafc;
+        --text-dark: #1f2937;
+        --text-muted: #6b7280;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+
+    .home-container {
+        width: 100%;
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* Welcome Banner for authenticated users */
+    .welcome-banner {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+        border-radius: 20px;
+        padding: 30px 40px;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        animation: slideInDown 0.6s ease-out;
+        border: 2px solid rgba(30, 64, 175, 0.1);
+    }
+
+    .welcome-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .welcome-avatar {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: 3px solid var(--primary);
+        object-fit: cover;
+        box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+    }
+
+    .welcome-text h2 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 5px;
+    }
+
+    .welcome-text h2 span {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .welcome-text p {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+
+    .welcome-actions {
+        display: flex;
+        gap: 12px;
+    }
+
+    .welcome-btn {
+        padding: 12px 24px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .welcome-btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%);
+        color: white;
+    }
+
+    .welcome-btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(30, 64, 175, 0.4);
+        color: white;
+    }
+
+    .welcome-btn-secondary {
+        background: white;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+    }
+
+    .welcome-btn-secondary:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    /* Hero Section */
+    .hero {
+        text-align: center;
+        padding: 80px 20px;
+        color: white;
+        animation: fadeInDown 0.8s ease-out;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero p {
+        font-size: 1.3rem;
+        margin-bottom: 40px;
+        opacity: 0.95;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 14px 32px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: white;
+        color: var(--primary);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid white;
+    }
+
+    .btn-secondary:hover {
+        background: white;
+        color: var(--primary);
+    }
+
+    /* Stats Section */
+    .stats-section {
+        background: white;
+        padding: 60px 20px;
+        margin: 60px 0;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+    }
+
+    .stat-item {
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .stat-item:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .stat-item:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .stat-item:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .stat-item:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .stat-number {
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin-top: 10px;
+    }
+
+    /* Testimonials/Reviews Section */
+    .reviews-section {
+        background: white;
+        padding: 60px 20px;
+        margin: 60px 0;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .reviews-section h2 {
+        font-size: 2rem;
+        color: var(--text-dark);
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .reviews-subtitle {
+        text-align: center;
+        color: var(--text-muted);
+        margin-bottom: 40px;
+        font-size: 1.05rem;
+    }
+
+    .reviews-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 25px;
+    }
+
+    .review-card {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        padding: 25px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .review-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .review-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .review-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .review-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary);
+    }
+
+    .review-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .review-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--accent);
+    }
+
+    .review-user-info h4 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 3px;
+    }
+
+    .review-user-info span {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .review-stars {
+        display: flex;
+        gap: 3px;
+        margin-bottom: 15px;
+    }
+
+    .review-stars i {
+        color: var(--warning);
+        font-size: 1rem;
+    }
+
+    .review-stars i.empty {
+        color: #d1d5db;
+    }
+
+    .review-content {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        font-style: italic;
+    }
+
+    .review-content::before {
+        content: '"';
+        font-size: 2rem;
+        color: var(--accent);
+        line-height: 0;
+        margin-right: 5px;
+    }
+
+    .review-event {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .no-reviews {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+
+    .no-reviews i {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    /* Events Section */
+    .events-section {
+        padding: 60px 20px;
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .events-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    .event-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .event-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .event-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .event-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .event-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .event-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .event-image-placeholder {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+    }
+
+    .event-content {
+        padding: 25px;
+    }
+
+    .event-date {
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        color: var(--success);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .event-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+        line-height: 1.4;
+    }
+
+    .event-description {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .event-location {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+
+    .event-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .event-price {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--accent);
+    }
+
+    .btn-view {
+        background: var(--primary);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view:hover {
+        background: var(--accent);
+        transform: translateX(3px);
+        color: white;
+    }
+
+    /* Share buttons */
+    .share-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-share {
+        background: transparent;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        color: var(--primary);
+        padding: 8px 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .btn-share:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* No Events Message */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: white;
+    }
+
+    .empty-state p {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
+    }
+
+    /* Features Section */
+    .features-section {
+        background: white;
+        padding: 60px 20px;
+        margin-top: 60px;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+    }
+
+    .feature-item {
+        text-align: center;
+        animation: fadeInUp 0.6s ease-out both;
+    }
+
+    .feature-item:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .feature-item:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .feature-item:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .feature-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+    }
+
+    .feature-description {
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    /* Login Prompt for non-authenticated users */
+    .login-prompt {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9));
+        border-radius: 20px;
+        padding: 40px;
+        margin: 40px 0;
+        text-align: center;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        border: 2px dashed var(--primary);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+
+        0%,
+        100% {
+            border-color: var(--primary);
+        }
+
+        50% {
+            border-color: var(--accent);
+        }
+    }
+
+    .login-prompt h3 {
+        font-size: 1.5rem;
+        color: var(--text-dark);
+        margin-bottom: 15px;
+    }
+
+    .login-prompt p {
+        color: var(--text-muted);
+        margin-bottom: 25px;
+    }
+
+    .login-prompt-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .hero h1 {
+            font-size: 2.2rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+
+        .cta-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .events-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .welcome-banner {
+            flex-direction: column;
+            text-align: center;
+            gap: 20px;
+        }
+
+        .welcome-content {
+            flex-direction: column;
+        }
+
+        .welcome-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .welcome-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .reviews-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="home-container">
+    <!-- Welcome Banner for authenticated users -->
+    @if (isAuthenticated && currentUser != null)
+    {
+        <div class="welcome-banner">
+            <div class="welcome-content">
+                @if (!string.IsNullOrEmpty(currentUser.ProfilePictureUrl))
+                {
+                    <img src="@currentUser.ProfilePictureUrl" alt="Profil" class="welcome-avatar" />
+                }
+                else
+                {
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=@currentUser.Id" alt="Avatar"
+                        class="welcome-avatar" />
+                }
+                <div class="welcome-text">
+                    <h2>Bienvenue, <span>@userName</span>!</h2>
+                    <p>Ravi de vous revoir. Découvrez les derniers événements ou gérez les vôtres.</p>
+                </div>
+            </div>
+            <div class="welcome-actions">
+                <a href="@Url.Action("Profile", "Account")" class="welcome-btn welcome-btn-secondary">
+                    <i class="fas fa-user"></i> Mon profil
+                </a>
+                <a href="@Url.Action("Index", "Event")" class="welcome-btn welcome-btn-primary">
+                    <i class="fas fa-calendar-alt"></i> Voir événements
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1><i class="fas fa-calendar-check"></i> GestionEvenements</h1>
+        <p>Découvrez et gérez les meilleurs événements près de chez vous</p>
+        <div class="cta-buttons">
+            <a href="@Url.Action("Index", "Event")" class="btn btn-primary">
+                <i class="fas fa-search"></i> Parcourir les événements
+            </a>
+            @if (isAuthenticated)
+            {
+                @if (User.IsInRole("Admin"))
+                {
+                    <a href="@Url.Action("Create", "Event")" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i> Créer un événement
+                    </a>
+                }
+            }
+            else
+            {
+                <a href="@Url.Action("Register", "Account")" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i> S'inscrire
+                </a>
+            }
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    @if (ViewBag.Stats != null)
+    {
+        <section class="stats-section">
+            <h2 style="font-size: 2rem; color: var(--text-dark); text-align: center;">
+                <i class="fas fa-chart-bar" style="color: var(--primary);"></i> Nos statistiques
+            </h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">@ViewBag.Stats.TotalEvents</div>
+                    <div class="stat-label"><i class="fas fa-calendar-alt"></i> Événements</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">@ViewBag.Stats.TotalUsers</div>
+                    <div class="stat-label"><i class="fas fa-users"></i> Utilisateurs actifs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">@ViewBag.Stats.TotalInscriptions</div>
+                    <div class="stat-label"><i class="fas fa-ticket-alt"></i> Inscriptions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">@ViewBag.Stats.UpcomingEvents</div>
+                    <div class="stat-label"><i class="fas fa-clock"></i> À venir</div>
+                </div>
+            </div>
+        </section>
+    }
+
+    <!-- Reviews/Testimonials Section -->
+    <section class="reviews-section">
+        <h2><i class="fas fa-star" style="color: var(--warning);"></i> Avis de nos utilisateurs</h2>
+        <p class="reviews-subtitle">Découvrez ce que notre communauté pense de nos événements</p>
+
+        @if (ViewBag.RecentReviews != null && ((List<Comment>)ViewBag.RecentReviews).Count > 0)
+        {
+            <div class="reviews-grid">
+                @foreach (var review in (List<Comment>)ViewBag.RecentReviews)
+                {
+                    <div class="review-card">
+                        <div class="review-header">
+                            @if (review.User != null)
+                            {
+                                @if (!string.IsNullOrEmpty(review.User.ProfilePictureUrl))
+                                {
+                                    <img src="@review.User.ProfilePictureUrl" alt="@review.User.FirstName" class="review-avatar" />
+                                }
+                                else
+                                {
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=@review.User.Id" alt="Avatar"
+                                        class="review-avatar" />
+                                }
+                                <div class="review-user-info">
+                                    <h4>@review.User.FirstName @review.User.LastName</h4>
+                                    <span><i class="fas fa-clock"></i> @review.DateCreation.ToString("dd MMM yyyy")</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="review-stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                if (i <= review.Note)
+                                {
+                                    <i class="fas fa-star"></i>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-star empty"></i>
+                                }
+                            }
+                        </div>
+                        <p class="review-content">@review.Texte</p>
+                        @if (review.Event != null)
+                        {
+                            <div class="review-event">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>@review.Event.Titre</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-reviews">
+                <i class="fas fa-comments"></i>
+                <p>Aucun avis pour le moment. Soyez le premier à partager votre expérience!</p>
+            </div>
+        }
+    </section>
+
+    <!-- Login Prompt for non-authenticated users -->
+    @if (!isAuthenticated)
+    {
+        <div class="login-prompt">
+            <h3><i class="fas fa-lock" style="color: var(--primary);"></i> Accès réservé aux membres</h3>
+            <p>Connectez-vous pour accéder à toutes les fonctionnalités: inscriptions aux événements, commentaires, et plus
+                encore!</p>
+            <div class="login-prompt-buttons">
+                <a href="@Url.Action("Login", "Account")" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Se connecter
+                </a>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-secondary"
+                    style="background: var(--accent); color: white; border-color: var(--accent);">
+                    <i class="fas fa-user-plus"></i> Créer un compte
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- Events Section -->
+    <section class="events-section">
+        <h2 class="section-title"><i class="fas fa-star"></i> Événements en vedette</h2>
+
+        @if (ViewBag.FeaturedEvents != null && ((List<Event>)ViewBag.FeaturedEvents).Count > 0)
+        {
+            <div class="events-grid">
+                @foreach (var evt in (List<Event>)ViewBag.FeaturedEvents)
+                {
+                    <div class="event-card">
+                        @if (!string.IsNullOrEmpty(evt.ImageUrl))
+                        {
+                            <img src="@evt.ImageUrl" alt="@evt.Titre" class="event-image" />
+                        }
+                        else
+                        {
+                            <div class="event-image-placeholder">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        }
+                        <div class="event-content">
+                            <span class="event-date">
+                                <i class="fas fa-calendar-alt"></i> @evt.DateEvent.ToString("dd MMM yyyy")
+                            </span>
+                            <h3 class="event-title">@evt.Titre</h3>
+                            <p class="event-description">@evt.Description</p>
+                            <div class="event-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>@evt.Lieu</span>
+                            </div>
+                            <div class="event-footer">
+                                <span class="event-price">@evt.Prix.ToString("0.00") DH</span>
+                                <div style="display:flex; gap:12px; align-items:center;">
+                                    <a href="@Url.Action("Details", "Event", new { id = evt.Id })" class="btn-view">
+                                        Voir plus <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                    <div class="share-group" aria-label="Partager">
+                                        <button type="button" class="btn-share" title="Partager"
+                                            onclick="shareEvent(@System.Text.Json.JsonSerializer.Serialize(Url.Action("Details", "Event", new { id = evt.Id }, ViewContext.HttpContext.Request.Scheme)), @System.Text.Json.JsonSerializer.Serialize(evt.Titre))">
+                                            <i class="fas fa-share-alt"></i>
+                                        </button>
+                                        <a target="_blank" rel="noopener" class="btn-share" title="Facebook"
+                                            href="https://www.facebook.com/sharer/sharer.php?u=@Uri.EscapeDataString(Url.Action("Details", "Event", new { id = evt.Id }, ViewContext.HttpContext.Request.Scheme))">
+                                            <i class="fab fa-facebook-f"></i>
+                                        </a>
+                                        <a target="_blank" rel="noopener" class="btn-share" title="WhatsApp"
+                                            href="https://api.whatsapp.com/send?text=@Uri.EscapeDataString(evt.Titre + " " + Url.Action("Details", "Event", new { id = evt.Id }, ViewContext.HttpContext.Request.Scheme))">
+                                            <i class="fab fa-whatsapp"></i>
+                                        </a>
+                                        <button type="button" class="btn-share" title="Instagram"
+                                            onclick="shareToInstagram(@System.Text.Json.JsonSerializer.Serialize(Url.Action("Details", "Event", new { id = evt.Id }, ViewContext.HttpContext.Request.Scheme)))">
+                                            <i class="fab fa-instagram"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="@Url.Action("Index", "Event")" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Voir tous les événements
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <p><i class="fas fa-inbox" style="font-size: 3rem; display: block; margin-bottom: 20px;"></i></p>
+                <p>Aucun événement disponible pour le moment</p>
+                @if (isAuthenticated && User.IsInRole("Admin"))
+                {
+                    <a href="@Url.Action("Create", "Event")" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Créer le premier événement
+                    </a>
+                }
+            </div>
+        }
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <h2 style="font-size: 2rem; color: var(--text-dark); text-align: center;">
+            <i class="fas fa-gem" style="color: var(--accent);"></i> Pourquoi nous choisir?
+        </h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3 class="feature-title">Facile à utiliser</h3>
+                <p class="feature-description">Interface intuitive pour trouver et gérer vos événements en quelques
+                    clics</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3 class="feature-title">Sécurisé</h3>
+                <p class="feature-description">Vos données sont protégées avec les meilleures pratiques de sécurité</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3 class="feature-title">Communauté</h3>
+                <p class="feature-description">Rejoignez des milliers d'utilisateurs passionnés par les événements</p>
+            </div>
+        </div>
+    </section>
+    <script>
+        function shareEvent(url, title) {
+            try {
+                const text = (title || '') + ' — ' + url;
+                if (navigator.share) {
+                    navigator.share({ title: title, text: text, url: url }).catch(function () { });
+                    return;
+                }
+                const fb = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url) + '&quote=' + encodeURIComponent(title || '');
+                window.open(fb, '_blank', 'noopener');
+            } catch (e) { console.error(e); }
+        }
+
+        function shareToInstagram(url) {
+            try {
+                if (navigator.share) {
+                    navigator.share({ title: 'Partager', text: url }).catch(function () { });
+                    return;
+                }
+                copyToClipboard(url);
+                alert('Lien copié. Ouvrez Instagram et collez le lien dans une story ou message.');
+            } catch (e) { console.error(e); }
+        }
+
+        function copyToClipboard(text) {
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(function () { });
+                return;
+            }
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) { }
+            document.body.removeChild(ta);
+        }
+    </script>
+</div>

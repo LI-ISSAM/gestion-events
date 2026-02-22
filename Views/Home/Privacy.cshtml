@@ -1,0 +1,330 @@
+﻿@{
+    ViewData["Title"] = "Politique de Confidentialité";
+}
+
+<style>
+    :root {
+        --primary: #1e40af;
+        --accent: #ec4899;
+        --success: #10b981;
+        --text-dark: #1f2937;
+        --text-muted: #6b7280;
+        --border: #e5e7eb;
+    }
+
+    .privacy-container {
+        max-width: 900px;
+        margin: 0 auto;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    .privacy-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .privacy-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+    }
+
+    .privacy-header p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    .privacy-header .last-update {
+        display: inline-block;
+        background: linear-gradient(135deg, rgba(30, 64, 175, 0.1), rgba(236, 72, 153, 0.05));
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: var(--primary);
+        margin-top: 15px;
+    }
+
+    .privacy-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
+    .privacy-section {
+        padding: 35px 40px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .privacy-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(30, 64, 175, 0.1), rgba(236, 72, 153, 0.1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .section-icon i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+
+    .privacy-section h2 {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 15px;
+    }
+
+    .privacy-section p {
+        color: var(--text-muted);
+        line-height: 1.8;
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+
+    .privacy-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 15px 0;
+    }
+
+    .privacy-section ul li {
+        padding: 10px 0 10px 30px;
+        position: relative;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
+
+    .privacy-section ul li::before {
+        content: '\f00c';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        left: 0;
+        color: var(--success);
+    }
+
+    .highlight-box {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05));
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .highlight-box h4 {
+        color: var(--success);
+        font-weight: 700;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .highlight-box p {
+        color: var(--text-muted);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .contact-section {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        padding: 40px;
+        text-align: center;
+        color: white;
+    }
+
+    .contact-section h2 {
+        color: white;
+        margin-bottom: 15px;
+    }
+
+    .contact-section p {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 25px;
+    }
+
+    .contact-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: white;
+        color: var(--primary);
+        padding: 14px 30px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .contact-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        color: var(--accent);
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 30px;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        color: var(--accent);
+        transform: translateX(-5px);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@media (max-width: 768px) {
+        .privacy-section {
+            padding: 25px 20px;
+        }
+
+        .privacy-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .contact-section {
+            padding: 30px 20px;
+        }
+    }
+</style>
+
+<div class="privacy-container">
+    <a asp-controller="Home" asp-action="Index" class="back-link">
+        <i class="fas fa-arrow-left"></i> Retour à l'accueil
+    </a>
+
+    <div class="privacy-header">
+        <h1><i class="fas fa-shield-alt"></i> Politique de Confidentialité</h1>
+        <p>Nous nous engageons à protéger votre vie privée et vos données personnelles</p>
+        <span class="last-update">
+            <i class="fas fa-calendar-alt"></i> Dernière mise à jour: Décembre 2025
+        </span>
+    </div>
+
+    <div class="privacy-card">
+        <!-- Section 1: Collecte des données -->
+        <div class="privacy-section">
+            <div class="section-icon">
+                <i class="fas fa-database"></i>
+            </div>
+            <h2>1. Collecte des Données</h2>
+            <p>Nous collectons les informations que vous nous fournissez directement lors de votre inscription et utilisation de notre plateforme:</p>
+            <ul>
+                <li>Informations d'identification: nom, prénom, adresse e-mail</li>
+                <li>Informations de profil: photo, biographie, ville, pays</li>
+                <li>Données d'inscription aux événements</li>
+                <li>Commentaires et avis que vous publiez</li>
+                <li>Données de connexion et d'utilisation de la plateforme</li>
+            </ul>
+        </div>
+
+        <!-- Section 2: Utilisation des données -->
+        <div class="privacy-section">
+            <div class="section-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <h2>2. Utilisation des Données</h2>
+            <p>Vos données personnelles sont utilisées exclusivement pour:</p>
+            <ul>
+                <li>Gérer votre compte et vos inscriptions aux événements</li>
+                <li>Vous envoyer des notifications relatives aux événements</li>
+                <li>Améliorer nos services et votre expérience utilisateur</li>
+                <li>Répondre à vos demandes et questions</li>
+                <li>Assurer la sécurité de notre plateforme</li>
+            </ul>
+            <div class="highlight-box">
+                <h4><i class="fas fa-check-circle"></i> Notre engagement</h4>
+                <p>Nous ne vendons jamais vos données personnelles à des tiers. Vos informations restent confidentielles et sécurisées.</p>
+            </div>
+        </div>
+
+        <!-- Section 3: Protection des données -->
+        <div class="privacy-section">
+            <div class="section-icon">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2>3. Protection des Données</h2>
+            <p>Nous mettons en oeuvre des mesures de sécurité techniques et organisationnelles pour protéger vos données:</p>
+            <ul>
+                <li>Chiffrement SSL/TLS pour toutes les communications</li>
+                <li>Hachage sécurisé des mots de passe (bcrypt)</li>
+                <li>Accès restreint aux données personnelles</li>
+                <li>Surveillance continue des tentatives d'intrusion</li>
+                <li>Sauvegardes régulières et sécurisées</li>
+            </ul>
+        </div>
+
+        <!-- Section 4: Vos droits -->
+        <div class="privacy-section">
+            <div class="section-icon">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h2>4. Vos Droits</h2>
+            <p>Conformément à la réglementation en vigueur, vous disposez des droits suivants:</p>
+            <ul>
+                <li><strong>Droit d'accès:</strong> consulter vos données personnelles</li>
+                <li><strong>Droit de rectification:</strong> corriger vos informations</li>
+                <li><strong>Droit à l'effacement:</strong> demander la suppression de vos données</li>
+                <li><strong>Droit à la portabilité:</strong> récupérer vos données dans un format lisible</li>
+                <li><strong>Droit d'opposition:</strong> vous opposer au traitement de vos données</li>
+            </ul>
+        </div>
+
+        <!-- Section 5: Cookies -->
+        <div class="privacy-section">
+            <div class="section-icon">
+                <i class="fas fa-cookie-bite"></i>
+            </div>
+            <h2>5. Cookies</h2>
+            <p>Notre site utilise des cookies pour améliorer votre expérience de navigation:</p>
+            <ul>
+                <li><strong>Cookies essentiels:</strong> nécessaires au fonctionnement du site</li>
+                <li><strong>Cookies de session:</strong> maintiennent votre connexion active</li>
+                <li><strong>Cookies analytiques:</strong> nous aident à comprendre l'utilisation du site</li>
+            </ul>
+            <p>Vous pouvez configurer votre navigateur pour refuser les cookies, mais certaines fonctionnalités pourraient être limitées.</p>
+        </div>
+
+        <!-- Section 6: Conservation des données -->
+        <div class="privacy-section">
+            <div class="section-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h2>6. Conservation des Données</h2>
+            <p>Vos données personnelles sont conservées pendant la durée de votre utilisation de nos services. En cas de suppression de compte, vos données seront effacées dans un délai de 30 jours, sauf obligation légale de conservation.</p>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="contact-section">
+            <h2><i class="fas fa-envelope"></i> Des Questions?</h2>
+            <p>Pour toute question concernant notre politique de confidentialité ou vos données personnelles, n'hésitez pas à nous contacter.</p>
+            <a href="mailto:contact@gestionevenements.com" class="contact-btn">
+                <i class="fas fa-paper-plane"></i> Nous Contacter
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,562 @@
+@model List<GestionEvenements.Models.ApplicationUser>
+@using Microsoft.AspNetCore.Antiforgery
+@inject IAntiforgery Antiforgery
+
+@{
+    ViewData["Title"] = "Gérer les utilisateurs";
+    var searchTerm = ViewBag.SearchTerm ?? "";
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
+}
+
+<style>
+    :root {
+        --primary: #059669;
+        --primary-dark: #047857;
+        --accent: #d97706;
+        --accent-light: #fbbf24;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --bg-dark: #0f172a;
+        --bg-light: #f0fdf4;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(5, 150, 105, 0.2);
+    }
+
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @@keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(5, 150, 105, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(5, 150, 105, 0.5); }
+    }
+
+    @@keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
+    }
+
+    .manage-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #fef3c7 100%);
+        padding: 40px 5%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .manage-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 800px;
+        height: 800px;
+        background: radial-gradient(circle, rgba(5, 150, 105, 0.08) 0%, transparent 70%);
+        animation: float 20s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    .manage-container::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(217, 119, 6, 0.06) 0%, transparent 70%);
+        animation: float 25s ease-in-out infinite reverse;
+        pointer-events: none;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 12px 24px;
+        background: var(--glass-bg);
+        border-radius: 50px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        margin-bottom: 30px;
+        animation: slideInLeft 0.6s ease-out;
+    }
+
+    .back-link:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateX(-10px);
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.3);
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--primary-dark) 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 4s linear infinite;
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+    }
+
+    .page-header p {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+    }
+
+    .search-section {
+        max-width: 800px;
+        margin: 0 auto 40px;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 15px;
+        background: var(--glass-bg);
+        padding: 20px;
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .search-box input {
+        flex: 1;
+        padding: 16px 24px;
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        font-size: 1rem;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.15);
+        outline: none;
+    }
+
+    .search-btn {
+        padding: 16px 32px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(5, 150, 105, 0.4);
+    }
+
+    .reset-btn {
+        padding: 16px 24px;
+        background: white;
+        color: var(--text-dark);
+        border: 2px solid #e5e7eb;
+        border-radius: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .reset-btn:hover {
+        border-color: var(--danger);
+        color: var(--danger);
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    .users-table-container {
+        background: var(--glass-bg);
+        border-radius: 24px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+
+    .table-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 25px 30px;
+        display: grid;
+        grid-template-columns: 2fr 2fr 1.5fr 1fr 1.2fr;
+        gap: 20px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .table-row {
+        padding: 25px 30px;
+        display: grid;
+        grid-template-columns: 2fr 2fr 1.5fr 1fr 1.2fr;
+        gap: 20px;
+        align-items: center;
+        border-bottom: 1px solid rgba(5, 150, 105, 0.1);
+        transition: all 0.4s ease;
+        position: relative;
+    }
+
+    .table-row::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(180deg, var(--primary), var(--accent));
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+
+    .table-row:hover {
+        background: linear-gradient(90deg, rgba(5, 150, 105, 0.05) 0%, rgba(217, 119, 6, 0.03) 100%);
+        transform: translateX(8px);
+    }
+
+    .table-row:hover::before {
+        transform: scaleY(1);
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: var(--text-dark);
+        font-size: 1.05rem;
+    }
+
+    .user-email {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .user-date {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%);
+        color: var(--success);
+        border: 2px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-active::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: var(--success);
+        border-radius: 50%;
+        animation: pulse-glow 2s infinite;
+    }
+
+    .status-suspended {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%);
+        color: var(--danger);
+        border: 2px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .action-btn {
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 2px solid;
+        background: white;
+    }
+
+    .action-btn.activate {
+        border-color: var(--success);
+        color: var(--success);
+    }
+
+    .action-btn.activate:hover {
+        background: var(--success);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .action-btn.suspend {
+        border-color: var(--danger);
+        color: var(--danger);
+    }
+
+    .action-btn.suspend:hover {
+        background: var(--danger);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 40px;
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 20px;
+        display: block;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+        font-size: 1.2rem;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 50px;
+        animation: fadeInUp 0.8s ease-out 0.6s both;
+    }
+
+    .pagination a, .pagination span {
+        padding: 14px 20px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        background: var(--glass-bg);
+        border: 2px solid var(--glass-border);
+        color: var(--primary);
+    }
+
+    .pagination a:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+    }
+
+    .pagination .active {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border-color: transparent;
+    }
+
+    @@media (max-width: 1024px) {
+        .table-header, .table-row {
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .table-header > div:nth-child(2),
+        .table-row > div:nth-child(2) {
+            display: none;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .page-header h1 { font-size: 2rem; }
+        .search-box { flex-direction: column; }
+        .table-header, .table-row { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="manage-container">
+    <a href="@Url.Action("Index")" class="back-link">
+        <i class="fas fa-arrow-left"></i>Retour au tableau de bord
+    </a>
+
+    <div class="page-header">
+        <h1><i class="fas fa-users-cog me-3"></i>Gestion des Utilisateurs</h1>
+        <p>Administrez et gérez les comptes utilisateurs de votre plateforme</p>
+    </div>
+
+    <div class="search-section">
+        <form method="get" class="search-box">
+            <input type="text" name="searchTerm" placeholder="Rechercher par nom ou email..." value="@searchTerm" />
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i>Rechercher
+            </button>
+            @if (!string.IsNullOrEmpty(searchTerm as string))
+            {
+                <a href="@Url.Action("ManageUsers")" class="reset-btn">
+                    <i class="fas fa-times"></i>Réinitialiser
+                </a>
+            }
+        </form>
+    </div>
+
+    <div class="users-table-container">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-header">
+                <div>Utilisateur</div>
+                <div>Email</div>
+                <div>Date d'inscription</div>
+                <div>Statut</div>
+                <div>Actions</div>
+            </div>
+
+            @foreach (var user in Model)
+            {
+                var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.UtcNow;
+                var statusClass = isLocked ? "status-suspended" : "status-active";
+                var statusText = isLocked ? "Suspendu" : "Actif";
+                var actionText = isLocked ? "Réactiver" : "Suspendre";
+                var actionClass = isLocked ? "activate" : "suspend";
+
+                <div class="table-row">
+                    <div class="user-info">
+                        <span class="user-name">@user.FirstName @user.LastName</span>
+                    </div>
+                    <div class="user-email">@user.Email</div>
+                    <div class="user-date">@user.CreatedAt.ToString("dd MMM yyyy")</div>
+                    <div>
+                        <span class="status-badge @statusClass">@statusText</span>
+                    </div>
+                    <div>
+                        <button class="action-btn @actionClass" onclick="toggleUserStatus('@user.Id', @isLocked.ToString().ToLower())" type="button">
+                            <i class="fas @(isLocked ? "fa-unlock" : "fa-ban") me-2"></i>@actionText
+                        </button>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-user-slash"></i>
+                <p>Aucun utilisateur trouvé</p>
+            </div>
+        }
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <div class="pagination">
+            @if (currentPage > 1)
+            {
+                <a href="@Url.Action("ManageUsers", new { searchTerm = searchTerm, page = 1 })">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="@Url.Action("ManageUsers", new { searchTerm = searchTerm, page = (int)currentPage - 1 })">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            }
+
+            @for (int i = Math.Max(1, (int)currentPage - 2); i <= Math.Min((int)totalPages, (int)currentPage + 2); i++)
+            {
+                if (i == currentPage)
+                {
+                    <span class="active">@i</span>
+                }
+                else
+                {
+                    <a href="@Url.Action("ManageUsers", new { searchTerm = searchTerm, page = i })">@i</a>
+                }
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <a href="@Url.Action("ManageUsers", new { searchTerm = searchTerm, page = (int)currentPage + 1 })">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="@Url.Action("ManageUsers", new { searchTerm = searchTerm, page = totalPages })">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            }
+        </div>
+    }
+</div>
+
+<input type="hidden" id="csrf-token" value="@tokens.RequestToken" />
+
+<script>
+function toggleUserStatus(userId, isSuspended) {
+    const action = isSuspended ? 'UnsuspendUser' : 'SuspendUser';
+    const url = '@Url.Action("__placeholder__", "Dashboard")'.replace('__placeholder__', action);
+    const message = isSuspended
+        ? "Êtes-vous sûr de vouloir réactiver cet utilisateur ?"
+        : "Êtes-vous sûr de vouloir suspendre cet utilisateur ?";
+
+    if (!confirm(message)) return;
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            "RequestVerificationToken": document.getElementById("csrf-token").value
+        },
+        body: JSON.stringify({ userId: userId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert(data.message);
+        if (data.success) location.reload();
+    })
+    .catch(err => console.error("Erreur :", err));
+}
+</script>

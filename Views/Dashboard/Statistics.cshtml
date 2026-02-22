@@ -1,0 +1,435 @@
+@model StatisticsViewModel
+
+@{
+    ViewData["Title"] = "Statistiques";
+}
+
+<style>
+    :root {
+        --primary: #059669;
+        --primary-dark: #047857;
+        --accent: #d97706;
+        --accent-light: #fbbf24;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --info: #3b82f6;
+        --text-dark: #1e293b;
+        --text-muted: #64748b;
+        --glass-bg: rgba(255, 255, 255, 0.9);
+        --glass-border: rgba(5, 150, 105, 0.2);
+    }
+
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes slideInLeft {
+        from { opacity: 0; transform: translateX(-50px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    @@keyframes countUp {
+        from { opacity: 0; transform: scale(0.5); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @@keyframes shimmer {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+
+    @@keyframes progressGrow {
+        from { width: 0; }
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(3deg); }
+    }
+
+    @@keyframes starPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+
+    .stats-container {
+        min-height: 100vh;
+        padding: 40px 5%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-container::before {
+        content: '';
+        position: absolute;
+        top: -30%;
+        right: -15%;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(5, 150, 105, 0.1) 0%, transparent 70%);
+        animation: float 18s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        padding: 12px 24px;
+        background: var(--glass-bg);
+        border-radius: 50px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        margin-bottom: 30px;
+        animation: slideInLeft 0.6s ease-out;
+    }
+
+    .back-link:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateX(-10px);
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.3);
+    }
+
+    .page-header {
+        text-align: center;
+        margin-bottom: 60px;
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    .page-header h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 50%, var(--primary-dark) 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 4s linear infinite;
+        margin-bottom: 15px;
+        letter-spacing: -2px;
+    }
+
+    .page-header p {
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .stat-card {
+        background: var(--glass-bg);
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        animation: fadeInUp 0.8s ease-out both;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+    .stat-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 30px 80px rgba(5, 150, 105, 0.15);
+    }
+
+    .stat-card-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .stat-card-header.ratings {
+        background: linear-gradient(135deg, var(--accent) 0%, #b45309 100%);
+    }
+
+    .stat-card-header.users {
+        background: linear-gradient(135deg, var(--info) 0%, #1d4ed8 100%);
+    }
+
+    .stat-card-header i {
+        font-size: 1.5rem;
+        opacity: 0.9;
+    }
+
+    .stat-card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .stat-card-body {
+        padding: 20px;
+    }
+
+    .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(5, 150, 105, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .stat-row:last-child {
+        border-bottom: none;
+    }
+
+    .stat-row:hover {
+        padding-left: 15px;
+        background: linear-gradient(90deg, rgba(5, 150, 105, 0.05) 0%, transparent 100%);
+        border-radius: 12px;
+    }
+
+    .stat-label {
+        font-weight: 600;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: countUp 0.8s ease-out;
+    }
+
+    .progress-container {
+        flex: 1;
+        margin-right: 20px;
+    }
+
+    .progress-bar-bg {
+        background: #e5e7eb;
+        border-radius: 8px;
+        height: 8px;
+        overflow: hidden;
+        margin-top: 6px;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+        border-radius: 8px;
+        animation: progressGrow 1s ease-out;
+        position: relative;
+    }
+
+    .progress-bar-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    .stars-container {
+        display: flex;
+        gap: 3px;
+    }
+
+    .stars-container i {
+        color: var(--accent);
+        font-size: 0.95rem;
+        animation: starPulse 1s ease-in-out infinite;
+    }
+
+    .stars-container i:nth-child(1) { animation-delay: 0s; }
+    .stars-container i:nth-child(2) { animation-delay: 0.1s; }
+    .stars-container i:nth-child(3) { animation-delay: 0.2s; }
+    .stars-container i:nth-child(4) { animation-delay: 0.3s; }
+    .stars-container i:nth-child(5) { animation-delay: 0.4s; }
+
+    .user-rank {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .rank-number {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.8rem;
+    }
+
+    .rank-number.gold { background: linear-gradient(135deg, #fbbf24, #d97706); }
+    .rank-number.silver { background: linear-gradient(135deg, #9ca3af, #6b7280); }
+    .rank-number.bronze { background: linear-gradient(135deg, #d97706, #92400e); }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-muted);
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.5;
+    }
+
+    @@media (max-width: 1024px) {
+        .stats-grid { 
+            grid-template-columns: 1fr; 
+            gap: 15px;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .page-header h1 { font-size: 2rem; }
+    }
+</style>
+
+<div class="stats-container">
+    <a href="@Url.Action("Index")" class="back-link">
+        <i class="fas fa-arrow-left"></i>Retour au tableau de bord
+    </a>
+
+    <div class="page-header">
+        <h1><i class="fas fa-chart-line me-3"></i>Statistiques</h1>
+        <p>Analyse détaillée et en temps réel de votre plateforme d'événements</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <i class="fas fa-clipboard-list"></i>
+                <h3>Inscriptions par statut</h3>
+            </div>
+            <div class="stat-card-body">
+                @if (Model.RegistrationsByStatus != null && Model.RegistrationsByStatus.Any())
+                {
+                    var total = Model.RegistrationsByStatus.Sum(x => x.Count);
+                    @foreach (var status in Model.RegistrationsByStatus)
+                    {
+                        var percentage = total > 0 ? (double)status.Count / total * 100 : 0;
+                        <div class="stat-row">
+                            <div class="progress-container">
+                                <div class="stat-label">@status.Status</div>
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill" style="width: @percentage%;"></div>
+                                </div>
+                            </div>
+                            <div class="stat-value">@status.Count</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Aucune donnée disponible</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header ratings">
+                <i class="fas fa-star"></i>
+                <h3>Distribution des notes</h3>
+            </div>
+            <div class="stat-card-body">
+                @if (Model.RatingDistribution != null && Model.RatingDistribution.Any())
+                {
+                    @foreach (var rating in Model.RatingDistribution.OrderByDescending(x => x.Rating))
+                    {
+                        <div class="stat-row">
+                            <div class="stat-label">
+                                <div class="stars-container">
+                                    @for (int i = 0; i < rating.Rating; i++)
+                                    {
+                                        <i class="fas fa-star"></i>
+                                    }
+                                    @for (int i = rating.Rating; i < 5; i++)
+                                    {
+                                        <i class="far fa-star" style="opacity: 0.3;"></i>
+                                    }
+                                </div>
+                            </div>
+                            <div class="stat-value">@rating.Count</div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-comment-slash"></i>
+                        <p>Aucun commentaire</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header users">
+                <i class="fas fa-trophy"></i>
+                <h3>Utilisateurs les plus actifs</h3>
+            </div>
+            <div class="stat-card-body">
+                @if (Model.MostActiveUsers != null && Model.MostActiveUsers.Any())
+                {
+                    var index = 0;
+                    @foreach (var user in Model.MostActiveUsers.Take(5))
+                    {
+                        var rankClass = index == 0 ? "gold" : (index == 1 ? "silver" : (index == 2 ? "bronze" : ""));
+                        <div class="stat-row">
+                            <div class="stat-label">
+                                <div class="user-rank">
+                                    <span class="rank-number @rankClass">@(index + 1)</span>
+                                    <span>@user.User</span>
+                                </div>
+                            </div>
+                            <div class="stat-value">@user.Registrations</div>
+                        </div>
+                        index++;
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <p>Aucun utilisateur</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

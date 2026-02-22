@@ -1,0 +1,504 @@
+@model Event
+@{
+    ViewData["Title"] = "Modifier un événement";
+}
+
+<style>
+    :root {
+        --primary: #059669;
+        --primary-dark: #047857;
+        --accent: #d97706;
+        --accent-light: #fbbf24;
+        --success: #10b981;
+        --danger: #ef4444;
+        --secondary: #64748b;
+        --light: #f0fdf4;
+        --dark: #0f172a;
+        --border: rgba(5, 150, 105, 0.2);
+    }
+
+    .edit-page {
+        min-height: 100vh;
+        padding: 60px 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .edit-page::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(5, 150, 105, 0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .edit-page::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: -10%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(217, 119, 6, 0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        animation: float 25s ease-in-out infinite reverse;
+    }
+
+    .edit-header {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        z-index: 1;
+    }
+
+    .edit-header h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 15px;
+        letter-spacing: -0.5px;
+    }
+
+    .edit-header p {
+        color: var(--secondary);
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .edit-container {
+        max-width: 750px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 
+            0 25px 50px -12px rgba(5, 150, 105, 0.15),
+            0 0 0 1px rgba(5, 150, 105, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        padding: 50px;
+        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        position: relative;
+        z-index: 1;
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(217, 119, 6, 0.08) 100%);
+        border-left: 4px solid var(--primary);
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 35px;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .info-box i {
+        color: var(--primary);
+        font-size: 1.2rem;
+    }
+
+    .form-group {
+        margin-bottom: 28px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 12px;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-group label i {
+        color: var(--primary);
+        font-size: 1rem;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 16px 20px;
+        border: 2px solid rgba(5, 150, 105, 0.15);
+        border-radius: 14px;
+        font-size: 1rem;
+        font-family: inherit;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        color: var(--dark);
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 
+            0 0 0 4px rgba(5, 150, 105, 0.1),
+            0 10px 40px -10px rgba(5, 150, 105, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 140px;
+        line-height: 1.6;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: #94a3b8;
+    }
+
+    .text-danger {
+        color: var(--danger);
+        font-size: 0.85rem;
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .file-input-wrapper input[type="file"] {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        z-index: 2;
+    }
+
+    .file-input-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 35px 20px;
+        border: 2px dashed rgba(5, 150, 105, 0.3);
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.03) 0%, rgba(217, 119, 6, 0.03) 100%);
+    }
+
+    .file-input-label:hover {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(217, 119, 6, 0.08) 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px -10px rgba(5, 150, 105, 0.15);
+    }
+
+    .file-input-label i {
+        font-size: 2.5rem;
+        color: var(--primary);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .file-input-label span {
+        color: var(--secondary);
+        font-weight: 500;
+    }
+
+    .file-input-label .file-hint {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+
+    .image-preview {
+        margin-top: 20px;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.15);
+        position: relative;
+    }
+
+    .image-preview::before {
+        content: 'Image actuelle';
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(5, 150, 105, 0.9);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 1;
+    }
+
+    .image-preview img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .image-preview:hover img {
+        transform: scale(1.05);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 45px;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        padding: 16px 32px;
+        border: none;
+        border-radius: 14px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-save::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-save:hover::before {
+        left: 100%;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-3px);
+        box-shadow: 
+            0 20px 40px -10px rgba(5, 150, 105, 0.4),
+            0 0 0 4px rgba(5, 150, 105, 0.1);
+    }
+
+    .btn-save:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+        background: rgba(100, 116, 139, 0.1);
+        color: var(--secondary);
+        border: 2px solid rgba(100, 116, 139, 0.2);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(100, 116, 139, 0.15);
+        border-color: var(--secondary);
+        transform: translateY(-2px);
+    }
+
+    @@keyframes fadeInUp {
+        from { 
+            opacity: 0; 
+            transform: translateY(30px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
+    @@keyframes fadeInDown {
+        from { 
+            opacity: 0; 
+            transform: translateY(-30px); 
+        }
+        to { 
+            opacity: 1; 
+            transform: translateY(0); 
+        }
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    @@media (max-width: 768px) {
+        .edit-page {
+            padding: 40px 15px;
+        }
+        .edit-container {
+            padding: 30px 24px;
+            border-radius: 20px;
+        }
+        .edit-header h1 {
+            font-size: 2rem;
+        }
+        .form-actions {
+            flex-direction: column;
+        }
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-cancel {
+            order: 2;
+        }
+        .btn-save {
+            order: 1;
+        }
+    }
+</style>
+
+<div class="edit-page">
+    <div class="edit-header">
+        <h1>
+            <i class="fas fa-edit me-2"></i>Modifier l'événement
+        </h1>
+        <p>Mettez à jour les informations de votre événement</p>
+    </div>
+
+    <div class="edit-container">
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <span><strong>Tous les champs marqués d'un astérisque (*) sont obligatoires.</strong></span>
+        </div>
+
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="form-group">
+                <label asp-for="Titre">
+                    <i class="fas fa-heading"></i>
+                    Titre de l'événement *
+                </label>
+                <input type="text" asp-for="Titre" placeholder="Ex: Concert Jazz en direct" required />
+                <span class="text-danger" asp-validation-for="Titre"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description">
+                    <i class="fas fa-align-left"></i>
+                    Description *
+                </label>
+                <textarea asp-for="Description" placeholder="Décrivez votre événement en détail..." required></textarea>
+                <span class="text-danger" asp-validation-for="Description"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Lieu">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Lieu *
+                </label>
+                <input type="text" asp-for="Lieu" placeholder="Ex: Salle de concert - Casablanca" required />
+                <span class="text-danger" asp-validation-for="Lieu"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DateEvent">
+                    <i class="fas fa-calendar-alt"></i>
+                    Date et heure *
+                </label>
+                <input type="datetime-local" asp-for="DateEvent" required />
+                <span class="text-danger" asp-validation-for="DateEvent"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Prix">
+                    <i class="fas fa-tag"></i>
+                    Prix d'entrée (DH) *
+                </label>
+                <input type="number" asp-for="Prix" step="0.01" placeholder="0.00" required />
+                <span class="text-danger" asp-validation-for="Prix"></span>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-image"></i>
+                    Image de l'événement
+                </label>
+                <div class="file-input-wrapper">
+                    <input type="file" id="imageFile" name="imageFile" accept="image/*" />
+                    <label for="imageFile" class="file-input-label">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <span id="fileName">Cliquez ou glissez une image ici</span>
+                        <span class="file-hint">PNG, JPG, WEBP jusqu'à 5MB</span>
+                    </label>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <div class="image-preview">
+                        <img src="@Model.ImageUrl" alt="@Model.Titre" />
+                    </div>
+                }
+            </div>
+
+            <div class="form-actions">
+                <a asp-action="Index" class="btn btn-cancel">
+                    <i class="fas fa-times"></i>Annuler
+                </a>
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-save"></i>Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const fileInput = document.getElementById('imageFile');
+        const fileName = document.getElementById('fileName');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function (e) {
+                if (this.files && this.files[0]) {
+                    fileName.textContent = this.files[0].name;
+                    fileName.style.color = '#059669';
+                    fileName.style.fontWeight = '600';
+                }
+            });
+        }
+
+        // Add stagger animation to form groups
+        const formGroups = document.querySelectorAll('.form-group');
+        formGroups.forEach((group, index) => {
+            group.style.animation = `fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${0.3 + index * 0.1}s both`;
+        });
+    });
+</script>

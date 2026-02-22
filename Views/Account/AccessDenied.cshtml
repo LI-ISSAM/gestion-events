@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "Accès refusé";
+}
+
+<style>
+    :root {
+        --danger: #ef4444;
+        --primary: #1e40af;
+    }
+
+    .error-container {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .error-icon {
+        font-size: 4rem;
+        color: var(--danger);
+        margin-bottom: 20px;
+    }
+
+    .error-container h1 {
+        font-size: 2rem;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+
+    .error-container p {
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 30px;
+    }
+
+    .back-link {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary) 0%, #1e3a8a 100%);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+    }
+</style>
+
+<div class="error-container">
+    <div class="error-icon">
+        <i class="fas fa-lock"></i>
+    </div>
+    <h1>Accès refusé</h1>
+    <p>Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>
+    <a asp-controller="Home" asp-action="Index" class="back-link">
+        <i class="fas fa-arrow-left me-2"></i>Retour à l'accueil
+    </a>
+</div>

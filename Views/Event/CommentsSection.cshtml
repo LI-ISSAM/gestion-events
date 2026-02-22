@@ -1,0 +1,421 @@
+@{
+    var @event = ViewBag.Event as Event;
+    var currentUser = ViewBag.CurrentUser as ApplicationUser;
+    var estTermine = ViewBag.EstTermine as bool? ?? false;
+    var userComment = ViewBag.UserComment as Comment;
+}
+
+<style>
+    .comments-section {
+        margin-top: 40px;
+        padding: 30px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .comments-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+
+    .comments-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .rating-summary {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .rating-average {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1e40af;
+    }
+
+    .stars {
+        color: #fbbf24;
+        font-size: 1.2rem;
+    }
+
+    .rating-count {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .comment-form {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+    }
+
+    .star-rating {
+        display: flex;
+        gap: 8px;
+        font-size: 1.8rem;
+    }
+
+    .star-rating .star {
+        cursor: pointer;
+        color: #d1d5db;
+        transition: all 0.2s ease;
+    }
+
+    .star-rating .star:hover,
+    .star-rating .star.active {
+        color: #fbbf24;
+        transform: scale(1.1);
+    }
+
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    textarea:focus {
+        outline: none;
+        border-color: #1e40af;
+        box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #1e40af 0%, #ec4899 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+    }
+
+    .comment-item {
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .comment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .comment-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .comment-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #1e40af 0%, #ec4899 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+    }
+
+    .comment-info {
+        flex: 1;
+    }
+
+    .comment-name {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .comment-date {
+        color: #6b7280;
+        font-size: 0.85rem;
+    }
+
+    .comment-rating {
+        display: flex;
+        gap: 4px;
+        color: #fbbf24;
+    }
+
+    .comment-text {
+        color: #4b5563;
+        line-height: 1.6;
+        margin: 12px 0;
+    }
+
+    .comment-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .comment-action-btn {
+        font-size: 0.85rem;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .comment-action-btn:hover {
+        color: #1e40af;
+    }
+
+    .no-comments {
+        text-align: center;
+        padding: 40px;
+        color: #9ca3af;
+    }
+
+    .login-to-comment {
+        background: #f0f9ff;
+        border: 2px solid #0284c7;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        color: #0c4a6e;
+    }
+
+    .event-ended-message {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        border-left: 4px solid #10b981;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+        color: #10b981;
+    }
+</style>
+
+@if (estTermine)
+{
+    <div class="comments-section">
+        <div class="comments-header">
+            <h3 class="comments-title">
+                <i class="fas fa-comments me-2"></i>Avis et évaluations
+            </h3>
+            @if (@event.Commentaires.Any())
+            {
+                <div class="rating-summary">
+                    <div class="rating-average">
+                        @(@event.Commentaires.Average(c => c.Note).ToString("F1"))
+                    </div>
+                    <div>
+                        <div class="stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star@(i <= @event.Commentaires.Average(c => c.Note) ? "" : "-o")"></i>
+                            }
+                        </div>
+                        <div class="rating-count">@(@event.Commentaires.Count) avis</div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="event-ended-message">
+                <i class="fas fa-check-circle me-2"></i>Cet événement est terminé. Vous pouvez maintenant partager votre avis !
+            </div>
+
+            <div class="comment-form">
+                <form id="commentForm">
+                    <input type="hidden" name="eventId" value="@(@event.Id)" />
+
+                    <div class="form-group">
+                        <label class="form-label">Votre évaluation</label>
+                        <div class="star-rating" id="starRating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span class="star@(userComment?.Note >= i ? " active" : "")" data-value="@i">★</span>
+                            }
+                        </div>
+                        <input type="hidden" id="ratingInput" name="note" value="@(userComment?.Note ?? 0)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Votre commentaire</label>
+                        <textarea name="contenu" placeholder="Partagez votre expérience de cet événement...">@(userComment?.Texte ?? "")</textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        @(userComment != null ? "Mettre à jour l'avis" : "Partager mon avis")
+                    </button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <div class="login-to-comment">
+                <p>
+                    <i class="fas fa-info-circle me-2"></i>
+                    <a href="@Url.Action("Login", "Account")">Connectez-vous</a> pour partager votre avis sur cet événement
+                </p>
+            </div>
+        }
+
+        <!-- Comments List -->
+        <div id="commentsList">
+            @if (@event.Commentaires.Any())
+            {
+                @foreach (var comment in @event.Commentaires.OrderByDescending(c => c.DateCreation))
+                {
+                    var initials = $"{comment.User.LastName?.FirstOrDefault() ?? 'U'}{comment.User.FirstName?.FirstOrDefault() ?? 'U'}".ToUpper();
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div class="comment-user">
+                                <div class="comment-avatar">@initials</div>
+                                <div class="comment-info">
+                                    <div class="comment-name">@comment.User.FirstName @comment.User.LastName</div>
+                                    <div class="comment-date">@comment.DateCreation.ToString("dd/MM/yyyy à HH:mm")</div>
+                                </div>
+                            </div>
+                            @if (User.Identity?.IsAuthenticated == true && (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == comment.UserId || User.IsInRole("Admin")))
+                            {
+                                <div>
+                                    <a href="#" onclick="deleteComment(@comment.Id); return false;" class="comment-action-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                        <div class="comment-rating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star@(i <= comment.Note ? "" : "-o")"></i>
+                            }
+                        </div>
+                        <p class="comment-text">@comment.Texte</p>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-comments">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                    <p>Aucun avis pour le moment. Soyez le premier à partager votre avis !</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <script>
+        // Star rating interactive
+        document.querySelectorAll('#starRating .star').forEach(star => {
+            star.addEventListener('click', function() {
+                const value = this.dataset.value;
+                document.getElementById('ratingInput').value = value;
+                document.querySelectorAll('#starRating .star').forEach(s => s.classList.remove('active'));
+                for (let i = 1; i <= value; i++) {
+                    document.querySelectorAll('#starRating .star')[i - 1].classList.add('active');
+                }
+            });
+        });
+
+        // Submit comment form
+        document.getElementById('commentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const eventId = formData.get('eventId');
+            const contenu = formData.get('contenu');
+            const note = parseInt(formData.get('note')) || 0;
+
+            if (!contenu.trim()) {
+                alert('Veuillez écrire un commentaire');
+                return;
+            }
+
+            if (note === 0) {
+                alert('Veuillez sélectionner une note');
+                return;
+            }
+
+            fetch('/Comment/AddComment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `eventId=${eventId}&contenu=${encodeURIComponent(contenu)}&note=${note}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Merci pour votre avis !');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Erreur');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Erreur lors de l\'envoi du commentaire');
+            });
+        });
+
+        function deleteComment(commentId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
+                fetch('/Comment/DeleteComment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `commentId=${commentId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Commentaire supprimé');
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Erreur');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+    </script>
+}
+else
+{
+    <div class="comments-section">
+        <div class="event-ended-message" style="border-left-color: #f59e0b; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%); color: #f59e0b;">
+            <i class="fas fa-hourglass-end me-2"></i>
+            <strong>Cet événement n'est pas encore terminé.</strong> Les avis seront disponibles après la date de l'événement.
+        </div>
+    </div>
+}

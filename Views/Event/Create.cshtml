@@ -1,0 +1,232 @@
+@model Event
+@{
+    ViewData["Title"] = "Créer un événement";
+}
+
+<style>
+    :root {
+        --primary: #059669;
+        --primary-dark: #047857;
+        --accent: #f59e0b;
+        --secondary: #0d9488;
+        --success: #22c55e;
+        --danger: #ef4444;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+    }
+
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    @@keyframes slideDown { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 500px; } }
+    @@keyframes glow { 0%, 100% { box-shadow: 0 0 30px rgba(5, 150, 105, 0.2); } 50% { box-shadow: 0 0 50px rgba(5, 150, 105, 0.4); } }
+
+    .create-container { max-width: 720px; margin: 0 auto; animation: fadeIn 0.8s ease-out; }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 30px;
+        padding: 12px 20px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    .back-link:hover { background: rgba(5, 150, 105, 0.08); transform: translateX(-5px); }
+
+    .create-card {
+        background: white;
+        border-radius: 28px;
+        box-shadow: 0 20px 60px rgba(5, 150, 105, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    .create-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+        background-size: 200% 200%;
+        animation: gradient-shift 5s ease infinite;
+        color: white;
+        padding: 50px 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    @@keyframes gradient-shift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+    .create-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        animation: rotate 20s linear infinite;
+    }
+    @@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .create-header h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+        letter-spacing: -0.5px;
+    }
+    .create-header p { margin-top: 12px; opacity: 0.9; font-size: 1rem; position: relative; z-index: 1; }
+
+    .form-section { padding: 48px; }
+
+    .form-group { margin-bottom: 28px; }
+    .form-label {
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.95rem;
+    }
+    .form-label i { color: var(--primary); font-size: 1.1rem; }
+
+    .form-control {
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 16px 20px;
+        font-size: 1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1); outline: none; background: white; }
+    textarea.form-control { resize: vertical; min-height: 140px; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+    .file-input-wrapper { position: relative; overflow: hidden; }
+    .file-input-wrapper input[type="file"] { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+    .file-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        padding: 32px;
+        border: 2px dashed var(--primary);
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, rgba(245, 158, 11, 0.05) 100%);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        color: var(--primary);
+    }
+    .file-label:hover { background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%); border-color: var(--accent); transform: scale(1.02); }
+    .file-label i { font-size: 2rem; }
+
+    .form-text { color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; }
+    .invalid-feedback { color: var(--danger); font-size: 0.85rem; display: block; margin-top: 8px; font-weight: 600; }
+
+    .alert {
+        border-radius: 14px;
+        border: none;
+        margin-bottom: 28px;
+        animation: slideDown 0.4s ease-out;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 24px;
+        font-weight: 600;
+    }
+    .alert-success { background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.05)); color: var(--success); border-left: 4px solid var(--success); }
+    .alert-danger { background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.05)); color: var(--danger); border-left: 4px solid var(--danger); }
+
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        border: none;
+        border-radius: 16px;
+        padding: 20px 32px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        box-shadow: 0 12px 35px rgba(5, 150, 105, 0.3);
+    }
+    .btn-submit:hover { transform: translateY(-5px); box-shadow: 0 25px 60px rgba(5, 150, 105, 0.4); }
+
+    @@media (max-width: 768px) {
+        .create-container { margin: 0 -15px; }
+        .create-header { padding: 36px 24px; }
+        .create-header h1 { font-size: 1.7rem; }
+        .form-section { padding: 28px; }
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="create-container">
+    <a asp-action="Index" class="back-link"><i class="fas fa-arrow-left"></i> Retour aux événements</a>
+
+    <div class="create-card">
+        <div class="create-header">
+            <h1><i class="fas fa-sparkles me-2"></i>Créer un événement</h1>
+            <p>Partagez votre événement avec la communauté</p>
+        </div>
+
+        <div class="form-section">
+            @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success"><i class="fas fa-check-circle"></i><span>@TempData["SuccessMessage"]</span></div> }
+            @if (TempData["ErrorMessage"] != null) { <div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i><span>@TempData["ErrorMessage"]</span></div> }
+
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label asp-for="Titre" class="form-label"><i class="fas fa-heading"></i>Titre de l'événement</label>
+                    <input asp-for="Titre" class="form-control" placeholder="Ex: Conférence Tech 2025" />
+                    <span asp-validation-for="Titre" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="form-label"><i class="fas fa-align-left"></i>Description</label>
+                    <textarea asp-for="Description" class="form-control" placeholder="Décrivez votre événement en détail..."></textarea>
+                    <span asp-validation-for="Description" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="Lieu" class="form-label"><i class="fas fa-map-marker-alt"></i>Lieu</label>
+                        <input asp-for="Lieu" class="form-control" placeholder="Casablanca, Rabat..." />
+                        <span asp-validation-for="Lieu" class="invalid-feedback"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="DateEvent" class="form-label"><i class="fas fa-calendar"></i>Date et heure</label>
+                        <input asp-for="DateEvent" type="datetime-local" class="form-control" />
+                        <span asp-validation-for="DateEvent" class="invalid-feedback"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Prix" class="form-label"><i class="fas fa-tag"></i>Prix (DH)</label>
+                    <input asp-for="Prix" type="number" step="0.01" class="form-control" placeholder="200" />
+                    <span asp-validation-for="Prix" class="invalid-feedback"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-image"></i>Image de l'événement</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="imageFile" name="imageFile" accept="image/*" />
+                        <label for="imageFile" class="file-label"><i class="fas fa-cloud-upload-alt"></i><span>Cliquez ou glissez une image</span></label>
+                    </div>
+                    <p class="form-text">Formats acceptés : JPG, PNG (max 5MB)</p>
+                </div>
+
+                <button type="submit" class="btn-submit"><i class="fas fa-rocket"></i>Créer l'événement</button>
+            </form>
+        </div>
+    </div>
+</div>

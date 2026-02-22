@@ -1,0 +1,281 @@
+@model UserProfileViewModel
+
+@{
+    ViewData["Title"] = "Mon Profil";
+}
+
+<style>
+    :root {
+        --primary: #1e40af;
+        --accent: #ec4899;
+        --success: #10b981;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 12px;
+        margin-bottom: 40px;
+        display: flex;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 4px solid white;
+        object-fit: cover;
+    }
+
+    .profile-info h1 {
+        font-size: 2rem;
+        margin: 0 0 10px 0;
+    }
+
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .profile-stat {
+        background: rgba(255,255,255,0.2);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #f3f4f6;
+        padding-bottom: 15px;
+    }
+
+    .event-item {
+        padding: 15px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .event-item:last-child {
+        border-bottom: none;
+    }
+
+    .event-title {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .event-date {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .rating {
+        color: #fbbf24;
+        font-size: 1.2rem;
+    }
+
+    .notification-item {
+        padding: 15px;
+        border-left: 4px solid var(--primary);
+        background: #f8fafc;
+        border-radius: 6px;
+        margin-bottom: 10px;
+    }
+
+    .notification-item.unread {
+        background: #eff6ff;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .notification-date {
+        color: #6b7280;
+        font-size: 0.85rem;
+    }
+
+    @@media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-content {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-info h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="profile-header">
+    <img src="@(string.IsNullOrEmpty(Model.User.ProfilePictureUrl) 
+        ? $"https://api.dicebear.com/7.x/avataaars/svg?seed={Model.User.Id}" 
+        : Model.User.ProfilePictureUrl)" 
+        alt="Profil" class="profile-avatar" />
+    <div class="profile-info" style="flex: 1;">
+        <h1>@Model.User.FirstName @Model.User.LastName</h1>
+        <p>@Model.User.Email</p>
+        <div class="profile-stats">
+            <div class="profile-stat">
+                <div class="stat-value">@Model.TotalEventsCreated</div>
+                <div class="stat-label">Événements créés</div>
+            </div>
+            <div class="profile-stat">
+                <div class="stat-value">@Model.TotalEventsAttended</div>
+                <div class="stat-label">Participations</div>
+            </div>
+            <div class="profile-stat">
+                <div class="stat-value">@Model.TotalComments</div>
+                <div class="stat-label">Commentaires</div>
+            </div>
+            <div class="profile-stat">
+                <div class="stat-value">@(Model.AverageRating > 0 ? Model.AverageRating.ToString("F1") : "-")</div>
+                <div class="stat-label">Note moyenne</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="profile-content">
+    <!-- Main Content -->
+    <div>
+        <!-- Événements créés -->
+        @if (Model.RecentEvents.Any())
+        {
+            <div class="card" style="margin-bottom: 30px;">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar-plus me-2"></i>Événements récents créés
+                </h3>
+                @foreach (var evt in Model.RecentEvents)
+                {
+                    <div class="event-item">
+                        <div class="event-title">@evt.Titre</div>
+                        <div class="event-date">
+                            <i class="fas fa-calendar me-1"></i>@evt.DateEvent.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Événements auxquels j'ai participé -->
+        @if (Model.RegisteredEvents.Any())
+        {
+            <div class="card">
+                <h3 class="card-title">
+                    <i class="fas fa-ticket-alt me-2"></i>Participations confirmées
+                </h3>
+                @foreach (var evt in Model.RegisteredEvents)
+                {
+                    <div class="event-item">
+                        <div class="event-title">@evt.Titre</div>
+                        <div class="event-date">
+                            <i class="fas fa-map-marker-alt me-1"></i>@evt.Lieu
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+        <!-- Actions rapides -->
+        <div class="card" style="margin-bottom: 30px;">
+            <h3 class="card-title">Actions</h3>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="@Url.Action("EditProfile", "Account")" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i>Modifier profil
+                </a>
+                <a href="@Url.Action("ChangePassword", "Account")" class="btn btn-secondary">
+                    <i class="fas fa-key me-1"></i>Changer mot de passe
+                </a>
+            </div>
+        </div>
+
+        <!-- Notifications récentes -->
+        <div class="card">
+            <h3 class="card-title">
+                <i class="fas fa-bell me-2"></i>Notifications
+            </h3>
+            @if (Model.Notifications.Any())
+            {
+                @foreach (var notif in Model.Notifications)
+                {
+                    <div class="notification-item @(notif.EstLue ? "" : "unread")">
+                        <div class="notification-title">@notif.Titre</div>
+                        <div class="notification-date">@notif.DateCreation.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="color: #9ca3af; text-align: center;">Aucune notification récente</p>
+            }
+        </div>
+    </div>
+</div>

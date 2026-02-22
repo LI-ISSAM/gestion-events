@@ -1,0 +1,771 @@
+@using GestionEvenements.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+@model List<Event>
+@{
+    ViewData["Title"] = "Événements";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var isAdmin = User.IsInRole("Admin");
+}
+
+<style>
+    :root {
+        --primary: #059669;
+        --primary-dark: #047857;
+        --primary-light: #10b981;
+        --accent: #f59e0b;
+        --accent-light: #fbbf24;
+        --secondary: #0d9488;
+        --success: #22c55e;
+        --danger: #ef4444;
+        --text-dark: #0f172a;
+        --text-muted: #64748b;
+        --bg-light: #f8fafc;
+    }
+
+    @@keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @@keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 24px;
+    }
+
+    /* Header Section */
+    .events-header {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: fadeInDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .header-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(245, 158, 11, 0.1));
+        border: 1px solid rgba(5, 150, 105, 0.2);
+        border-radius: 50px;
+        padding: 10px 24px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 20px;
+    }
+
+    .events-header h1 {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+        letter-spacing: -1.5px;
+    }
+
+    .events-header p {
+        color: var(--text-muted);
+        font-size: 1.15rem;
+        font-weight: 500;
+    }
+
+    /* Search Section */
+    .search-section {
+        background: white;
+        border-radius: 24px;
+        padding: 32px;
+        margin-bottom: 40px;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        animation: fadeInUp 0.6s ease-out 0.2s both;
+    }
+
+    .search-form {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        align-items: flex-end;
+    }
+
+    .search-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 220px;
+    }
+
+    .search-group label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .search-group label i {
+        color: var(--primary);
+        font-size: 0.9rem;
+    }
+
+    .search-input,
+    .search-select {
+        padding: 16px 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: #f8fafc;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .search-input:focus,
+    .search-select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: white;
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+    }
+
+    .search-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-search {
+        padding: 16px 32px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+    }
+
+    .btn-search:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 40px rgba(5, 150, 105, 0.4);
+    }
+
+    .btn-reset {
+        padding: 16px 24px;
+        background: white;
+        color: var(--text-muted);
+        border: 2px solid #e2e8f0;
+        border-radius: 14px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-reset:hover {
+        background: #f8fafc;
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .search-results-info {
+        margin-top: 20px;
+        padding: 16px 24px;
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.08), rgba(13, 148, 136, 0.05));
+        border-radius: 12px;
+        font-size: 0.95rem;
+        color: var(--primary-dark);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        border-left: 4px solid var(--primary);
+    }
+
+    /* Admin Banner */
+    .admin-banner {
+        margin-bottom: 40px;
+        padding: 28px 36px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+        background-size: 200% 200%;
+        animation: gradient-shift 5s ease infinite, fadeInUp 0.6s ease-out 0.3s both;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 15px 50px rgba(5, 150, 105, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    @@keyframes gradient-shift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+
+    .admin-banner::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        animation: rotate 20s linear infinite;
+    }
+
+    @@keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .admin-banner-text {
+        color: white;
+        font-size: 1.15rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .admin-banner-text i {
+        font-size: 1.5rem;
+    }
+
+    .admin-banner a {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: white;
+        color: var(--primary);
+        padding: 16px 32px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        font-size: 0.95rem;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .admin-banner a:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Events Grid */
+    .events-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        gap: 32px;
+    }
+
+    /* Premium Event Card */
+    .event-card {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+        animation: scaleIn 0.5s ease-out both;
+    }
+
+    .event-card:nth-child(1) { animation-delay: 0.1s; }
+    .event-card:nth-child(2) { animation-delay: 0.15s; }
+    .event-card:nth-child(3) { animation-delay: 0.2s; }
+    .event-card:nth-child(4) { animation-delay: 0.25s; }
+    .event-card:nth-child(5) { animation-delay: 0.3s; }
+    .event-card:nth-child(6) { animation-delay: 0.35s; }
+
+    .event-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+        z-index: 10;
+    }
+
+    .event-card:hover {
+        transform: translateY(-12px);
+        box-shadow: 0 30px 70px rgba(5, 150, 105, 0.15);
+    }
+
+    .event-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .event-image-container {
+        position: relative;
+        overflow: hidden;
+        height: 220px;
+    }
+
+    .event-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .event-card:hover .event-image {
+        transform: scale(1.1);
+    }
+
+    .event-date-badge {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        background: white;
+        border-radius: 14px;
+        padding: 12px 16px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        min-width: 65px;
+    }
+
+    .event-date-badge .day {
+        display: block;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--primary);
+        line-height: 1;
+    }
+
+    .event-date-badge .month {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 4px;
+    }
+
+    .event-content {
+        padding: 28px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-title {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 16px;
+        line-height: 1.3;
+        letter-spacing: -0.5px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .event-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-grow: 1;
+    }
+
+    .event-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .event-meta-item i {
+        color: var(--primary);
+        width: 20px;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    .event-card:hover .event-meta-item {
+        transform: translateX(6px);
+        color: var(--text-dark);
+    }
+
+    .event-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+        margin-top: auto;
+    }
+
+    .event-price {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-price-label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    .event-price-value {
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .event-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .btn-view:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 30px rgba(5, 150, 105, 0.4);
+        color: white;
+    }
+
+    /* Admin Actions */
+    .event-actions {
+        margin-top: 20px;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 16px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        flex: 1;
+        min-width: 90px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        text-align: center;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-inscriptions {
+        background: linear-gradient(135deg, var(--secondary), #0e7490);
+        color: white;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, var(--accent), #d97706);
+        color: white;
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, var(--danger), #dc2626);
+        color: white;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .registered-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.05));
+        color: var(--success);
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 2px solid var(--success);
+    }
+
+    /* No Events */
+    .no-events {
+        text-align: center;
+        padding: 100px 30px;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .no-events-icon {
+        width: 140px;
+        height: 140px;
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.1), rgba(245, 158, 11, 0.1));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+
+    .no-events-icon i {
+        font-size: 3.5rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .no-events h2 {
+        font-family: 'Space Grotesk', sans-serif;
+        color: var(--text-dark);
+        font-size: 1.8rem;
+        margin-bottom: 12px;
+        font-weight: 700;
+    }
+
+    .no-events p {
+        color: var(--text-muted);
+        margin-bottom: 30px;
+        font-size: 1.1rem;
+    }
+
+    .no-events a {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 16px 36px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 8px 30px rgba(5, 150, 105, 0.3);
+    }
+
+    .no-events a:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 45px rgba(5, 150, 105, 0.4);
+    }
+
+    @@media (max-width: 1024px) {
+        .events-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        .search-form { flex-direction: column; }
+        .search-group { width: 100%; }
+    }
+
+    @@media (max-width: 768px) {
+        .page-container { padding: 24px 16px; }
+        .events-header h1 { font-size: 2rem; }
+        .events-grid { grid-template-columns: 1fr; gap: 20px; }
+        .search-buttons { width: 100%; flex-direction: column; }
+        .btn-search, .btn-reset { width: 100%; justify-content: center; }
+        .admin-banner { flex-direction: column; gap: 16px; text-align: center; }
+    }
+</style>
+
+<div class="page-container">
+    <div class="events-header">
+        <div class="header-badge">
+            <i class="fas fa-calendar-star"></i>
+            Explorez nos événements
+        </div>
+        <h1>Tous les Événements</h1>
+        <p>Découvrez et participez aux meilleurs événements près de chez vous</p>
+    </div>
+
+    <div class="search-section">
+        <form asp-action="Index" method="get" class="search-form">
+            <div class="search-group">
+                <label><i class="fas fa-search"></i> Rechercher</label>
+                <input type="text" name="searchTerm" class="search-input" placeholder="Nom ou lieu de l'événement..." value="@ViewBag.SearchTerm" />
+            </div>
+            <div class="search-group">
+                <label><i class="fas fa-filter"></i> Type</label>
+                <select name="searchType" class="search-select">
+                    <option value="">Tous les champs</option>
+                    <option value="nom" selected="@(ViewBag.SearchType == "nom")">Nom</option>
+                    <option value="lieu" selected="@(ViewBag.SearchType == "lieu")">Lieu</option>
+                </select>
+            </div>
+            <div class="search-group">
+                <label><i class="fas fa-calendar-day"></i> Date</label>
+                <input type="date" name="searchDate" class="search-input" value="@ViewBag.SearchDate" />
+            </div>
+            <div class="search-buttons">
+                <button type="submit" class="btn-search"><i class="fas fa-search"></i> Rechercher</button>
+                <a asp-action="Index" class="btn-reset"><i class="fas fa-redo"></i> Réinitialiser</a>
+            </div>
+        </form>
+
+        @if (!string.IsNullOrEmpty(ViewBag.SearchTerm) || ViewBag.SearchDate != null)
+        {
+            <div class="search-results-info">
+                <i class="fas fa-info-circle"></i>
+                <span>@Model.Count résultat(s) trouvé(s)
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchTerm)) { <text> pour "<strong>@ViewBag.SearchTerm</strong>"</text> }
+                    @if (ViewBag.SearchDate != null) { <text> le @ViewBag.SearchDate</text> }
+                </span>
+            </div>
+        }
+    </div>
+
+    @if (isAdmin)
+    {
+        <div class="admin-banner">
+            <span class="admin-banner-text"><i class="fas fa-crown"></i> Espace Administrateur</span>
+            <a asp-action="Create"><i class="fas fa-plus-circle"></i> Créer un événement</a>
+        </div>
+    }
+
+    @if (Model != null && Model.Count > 0)
+    {
+        <div class="events-grid">
+            @foreach (var ev in Model)
+            {
+                <div class="event-card">
+                    <a asp-action="Details" asp-route-id="@ev.Id" class="event-link">
+                        <div class="event-image-container">
+                            <img src="@(string.IsNullOrEmpty(ev.ImageUrl) ? "/placeholder.svg?height=220&width=400" : ev.ImageUrl)" alt="@ev.Titre" class="event-image" />
+                            <div class="event-date-badge">
+                                <span class="day">@ev.DateEvent.Day</span>
+                                <span class="month">@ev.DateEvent.ToString("MMM")</span>
+                            </div>
+                        </div>
+                        <div class="event-content">
+                            <h3 class="event-title">@ev.Titre</h3>
+                            <div class="event-meta">
+                                <div class="event-meta-item"><i class="fas fa-map-marker-alt"></i><span>@ev.Lieu</span></div>
+                                <div class="event-meta-item"><i class="fas fa-clock"></i><span>@ev.DateEvent.ToString("HH:mm")</span></div>
+                            </div>
+                            <div class="event-footer">
+                                <div class="event-price">
+                                    <span class="event-price-label">Prix</span>
+                                    <span class="event-price-value">@ev.Prix.ToString("0") DH</span>
+                                </div>
+                                <span class="btn-view">Voir <i class="fas fa-arrow-right"></i></span>
+                            </div>
+                        </div>
+                    </a>
+                    @if (isAdmin)
+                    {
+                        <div class="event-actions">
+                            <a asp-action="Inscriptions" asp-route-eventId="@ev.Id" class="btn-action btn-inscriptions"><i class="fas fa-users"></i> @ev.Inscriptions.Count</a>
+                            <a asp-action="Edit" asp-route-id="@ev.Id" class="btn-action btn-edit"><i class="fas fa-edit"></i> Éditer</a>
+                            <button type="button" class="btn-action btn-delete" onclick="confirmDelete(@ev.Id, '@ev.Titre')"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <form id="deleteForm-@ev.Id" asp-action="Delete" method="post" style="display: none;">
+                            <input type="hidden" name="id" value="@ev.Id" />
+                        </form>
+                    }
+                    else if (currentUser != null && ev.Inscriptions.Any(r => r.UserId == currentUser.Id))
+                    {
+                        <div class="event-actions">
+                            <span class="registered-badge"><i class="fas fa-check-circle"></i> Inscrit</span>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-events">
+            <div class="no-events-icon"><i class="fas fa-calendar-plus"></i></div>
+            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm) || ViewBag.SearchDate != null)
+            {
+                <h2>Aucun résultat trouvé</h2>
+                <p>Essayez de modifier vos critères de recherche</p>
+                <a asp-action="Index"><i class="fas fa-arrow-left"></i> Voir tous les événements</a>
+            }
+            else
+            {
+                <h2>Aucun événement disponible</h2>
+                <p>Il n'y a pas encore d'événement. Soyez le premier à en créer un!</p>
+                @if (isAdmin) { <a asp-action="Create"><i class="fas fa-plus"></i> Créer un événement</a> }
+            }
+        </div>
+    }
+</div>
+
+<script>
+    function confirmDelete(eventId, eventTitle) {
+        if (confirm(`Êtes-vous sûr de vouloir supprimer "${eventTitle}" ?`)) {
+            document.getElementById('deleteForm-' + eventId).submit();
+        }
+    }
+</script>
